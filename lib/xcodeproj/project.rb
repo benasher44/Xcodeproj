@@ -576,8 +576,10 @@ module Xcodeproj
     #
     def host_targets_for_embedded_target(embedded_target)
       native_targets.select do |native_target|
-        ((embedded_target.uuid != native_target.uuid) &&
-         (native_target.dependencies.map(&:native_target_uuid).include? embedded_target.uuid))
+        next if embedded_target.uuid == native_target.uuid
+        dependency_uuids = Set.new native_target.dependencies.map(&:native_target_uuid)
+        dependency_uuids += native_target.frameworks_build_phases.files.map(&:file_ref).map(&:uuid) unless native_target.frameworks_build_phases.nil?
+        dependency_uuids.include? embedded_target.uuid
       end
     end
 
